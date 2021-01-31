@@ -37,6 +37,7 @@ defmodule ShopifexWeb.Routes do
     quote do
       scope "/", ShopifexWeb do
         pipe_through([:shopify_browser])
+        resources("/dashboard", DashboardController)
         resources("/plans", PlanController)
         resources("/grants", GrantController)
       end

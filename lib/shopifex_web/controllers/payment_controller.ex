@@ -50,7 +50,7 @@ defmodule ShopifexWeb.PaymentController do
       the guarded feature
       """
       def show_plans(conn, %{"guard" => guard, "redirect_after" => redirect_after}) do
-        plans = Shopifex.Shops.list_plans_granting_guard(guard)
+        plans = Shopifex.Payments.list_plans_granting_guard(guard)
 
         conn
         |> put_view(ShopifexWeb.PaymentView)
@@ -64,7 +64,7 @@ defmodule ShopifexWeb.PaymentController do
       end
 
       def select_plan(conn, %{"plan_id" => plan_id, "redirect_after" => redirect_after}) do
-        plan = Shopifex.Shops.get_plan!(plan_id)
+        plan = Shopifex.Payments.get_plan!(plan_id)
         shop = conn.private.shop
 
         {:ok, charge} = create_charge(shop, plan)
@@ -126,11 +126,11 @@ defmodule ShopifexWeb.PaymentController do
             "charge_id" => charge_id,
             "plan_id" => plan_id
           }) do
-        plan = Shopifex.Shops.get_plan!(plan_id)
+        plan = Shopifex.Payments.get_plan!(plan_id)
         shop = conn.private.shop
 
         {:ok, grant} =
-          Shopifex.Shops.create_grant(%{
+          Shopifex.Payments.create_grant(%{
             shop: shop,
             charge_id: charge_id,
             grants: plan.grants,
