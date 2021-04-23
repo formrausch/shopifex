@@ -14,50 +14,15 @@ defmodule Shopifex.Plug.ShopifyWebhook do
     {their_hmac, our_hmac} =
       case conn.method do
         "GET" ->
-          query_string =
-            conn.query_params
-            |> Enum.map(fn
-              {"hmac", _value} ->
-                nil
-
-              {"ids", value} ->
-                # This absolutely rediculous solution: https://community.shopify.com/c/Shopify-Apps/Hmac-Verification-for-Bulk-Actions/m-p/590611#M18504
-                ids =
-                  Enum.map(value, fn id ->
-                    "\"#{id}\""
-                  end)
-                  |> Enum.join(", ")
-
-                "ids=[#{ids}]"
-
-              {key, value} ->
-                "#{key}=#{value}"
-            end)
-            |> Enum.filter(&(!is_nil(&1)))
-            |> Enum.join("&")
-
           {
             conn.params["hmac"],
-            :crypto.hmac(
-              :sha256,
-              Application.fetch_env!(:shopifex, :secret),
-              query_string
-            )
-            |> Base.encode16()
-            |> String.downcase()
+            Shopify.Hmac.hmac_map(conn.params) |> String.downcase()
           }
 
         "POST" ->
           case Plug.Conn.get_req_header(conn, "x-shopify-hmac-sha256") do
             [header_hmac] ->
-              our_hmac =
-                :crypto.hmac(
-                  :sha256,
-                  Application.fetch_env!(:shopifex, :secret),
-                  conn.assigns[:raw_body]
-                )
-                |> Base.encode64()
-
+              our_hmac = Shopify.Hmac.hmac_raw_body(conn.assigns[:raw_body])
               {header_hmac, our_hmac}
 
             [] ->

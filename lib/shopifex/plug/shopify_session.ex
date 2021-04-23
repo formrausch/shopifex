@@ -32,35 +32,11 @@ defmodule Shopifex.Plug.ShopifySession do
     do: Map.get(token_claims, "loc", Application.get_env(:shopifex, :default_locale, "en"))
 
   defp initiate_new_session(conn = %{params: %{"hmac" => hmac}}) do
-    hmac = String.upcase(hmac)
-
-    query_string =
-      String.split(conn.query_string, "&")
-      |> Enum.map(fn query ->
-        [key, value] = String.split(query, "=")
-        {key, value}
-      end)
-      |> Enum.filter(fn {key, _} ->
-        key != "hmac"
-      end)
-      |> Enum.map(fn {key, value} ->
-        "#{key}=#{value}"
-      end)
-      |> Enum.join("&")
-
-    our_hmac =
-      :crypto.hmac(
-        :sha256,
-        Application.fetch_env!(:shopifex, :secret),
-        query_string
-      )
-      |> Base.encode16()
-
-    if our_hmac == hmac do
+    if Shopify.Hmac.valid_conn?(conn) do
       conn
       |> do_new_session()
     else
-      Logger.info("Invalid HMAC, expected #{our_hmac}")
+      Logger.info("Invalid HMAC, expected #{Shopify.Hmac.hmac_map(conn.params)} got #{hmac}")
       respond_invalid(conn)
     end
   end
