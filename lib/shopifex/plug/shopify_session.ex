@@ -67,7 +67,11 @@ defmodule Shopifex.Plug.ShopifySession do
         Application.fetch_env!(:shopifex, :redirect_uri)
       }"
 
+    IO.puts(Guardian.Plug.current_token(conn))
+    IO.puts(install_url)
+
     conn
+    |> Guardian.Plug.sign_out(%{})
     |> redirect(external: install_url)
     |> halt()
   end

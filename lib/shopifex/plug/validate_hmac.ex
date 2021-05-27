@@ -14,6 +14,10 @@ defmodule Shopifex.Plug.ValidateHmac do
     end
   end
 
+  def call(conn, _) do
+    conn
+  end
+
   defp respond_invalid(conn) do
     conn
     |> resp(:forbidden, "No valid HMAC")
