@@ -3,8 +3,6 @@ defmodule Shopify.Hmac do
     hmac = String.upcase(params["hmac"])
     our_hmac = Shopify.Hmac.hmac_map(params)
 
-    IO.puts("HMAC REQUEST: #{hmac}")
-    IO.puts("HMAC CALCULATED: #{our_hmac}")
     our_hmac == hmac
   end
 
